@@ -12,6 +12,19 @@ export type Trade = {
   asset: string | null;
   ticks: number | null;
   trade_time: string | null;
+  position: "long" | "short" | null;
+  entry_price: number | null;
+  entry_datetime: string | null;
+  exit_price: number | null;
+  exit_datetime: string | null;
+  followed_rules: string | null;
+  feeling_before: string | null;
+  feeling_during: string | null;
+  feeling_after: string | null;
+  moved_stop: string | null;
+  profit_too_early: string | null;
+  hesitated: string | null;
+  revenge_trade: string | null;
   created_at: string;
 };
 

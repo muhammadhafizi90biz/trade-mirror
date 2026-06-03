@@ -12,6 +12,19 @@ create table if not exists public.trades (
   asset text,
   ticks integer default 0,
   trade_time timestamptz,
+  position text check (position in ('long', 'short')),
+  entry_price numeric,
+  entry_datetime timestamptz,
+  exit_price numeric,
+  exit_datetime timestamptz,
+  followed_rules text,
+  feeling_before text,
+  feeling_during text,
+  feeling_after text,
+  moved_stop text,
+  profit_too_early text,
+  hesitated text,
+  revenge_trade text,
   created_at timestamptz not null default now()
 );
 

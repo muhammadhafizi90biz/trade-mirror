@@ -46,10 +46,20 @@ create table if not exists public.system_notifications (
   created_at timestamptz not null default now()
 );
 
+create table if not exists public.asset_settings (
+  id uuid primary key default gen_random_uuid(),
+  asset_name text not null,
+  asset_code text not null unique,
+  price_per_tick numeric not null check (price_per_tick > 0),
+  created_by uuid references public.profiles(id),
+  created_at timestamptz not null default now()
+);
+
 alter table public.profiles enable row level security;
 alter table public.trades enable row level security;
 alter table public.market_posts enable row level security;
 alter table public.system_notifications enable row level security;
+alter table public.asset_settings enable row level security;
 
 create policy "profiles are readable by owner"
   on public.profiles

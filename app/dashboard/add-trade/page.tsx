@@ -1,6 +1,23 @@
 import { TradeForm } from "./trade-form";
+import { createSupabaseAdminClient } from "@/lib/supabase/server";
 
-export default function AddTradePage() {
+async function getAssetOptions() {
+  const supabase = createSupabaseAdminClient();
+  const { data, error } = await supabase
+    .from("asset_settings")
+    .select("asset_name,asset_code")
+    .order("asset_code", { ascending: true });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data ?? [];
+}
+
+export default async function AddTradePage() {
+  const assets = await getAssetOptions();
+
   return (
     <div className="mx-auto max-w-4xl">
       <div className="border-b border-emerald-300/15 pb-6">
@@ -15,7 +32,7 @@ export default function AddTradePage() {
         </p>
       </div>
 
-      <TradeForm />
+      <TradeForm assets={assets} />
     </div>
   );
 }

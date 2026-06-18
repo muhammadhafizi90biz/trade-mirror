@@ -46,6 +46,15 @@ export type SystemNotification = {
   created_at: string;
 };
 
+export type AssetSetting = {
+  id: string;
+  asset_name: string;
+  asset_code: string;
+  price_per_tick: number;
+  created_by: string | null;
+  created_at: string;
+};
+
 export type Database = {
   public: {
     Tables: {
@@ -77,6 +86,15 @@ export type Database = {
           created_at?: string;
         };
         Update: Partial<SystemNotification>;
+        Relationships: [];
+      };
+      asset_settings: {
+        Row: AssetSetting;
+        Insert: Omit<AssetSetting, "id" | "created_at"> & {
+          id?: string;
+          created_at?: string;
+        };
+        Update: Partial<AssetSetting>;
         Relationships: [];
       };
     };

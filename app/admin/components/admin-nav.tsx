@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {
   Bell,
+  BadgeDollarSign,
   LogOut,
   Newspaper,
   ScanLine,
@@ -15,6 +16,7 @@ const navItems = [
   { href: "/admin/users", label: "Users Overview", icon: Users },
   { href: "/admin/trades", label: "Global Trade Logs", icon: TableProperties },
   { href: "/admin/cms", label: "Market News (CMS)", icon: Newspaper },
+  { href: "/admin/assets", label: "Asset Settings", icon: BadgeDollarSign },
   { href: "/admin/settings", label: "System Settings", icon: Settings },
 ];
 

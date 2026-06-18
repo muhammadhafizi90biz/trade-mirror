@@ -108,6 +108,7 @@ export async function saveTrade(
 
     revalidatePath("/dashboard");
     revalidatePath("/dashboard/add-trade");
+    revalidatePath("/dashboard/trades");
     return { message: "Trade saved successfully.", success: true };
   } catch (error) {
     return {

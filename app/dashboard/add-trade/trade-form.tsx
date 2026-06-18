@@ -5,6 +5,11 @@ import { useMemo, useState } from "react";
 import { BookPlus } from "lucide-react";
 import { saveTrade, type SaveTradeState } from "./actions";
 
+type AssetOption = {
+  asset_name: string;
+  asset_code: string;
+};
+
 const reflectionQuestions = [
   {
     name: "followed_rules",
@@ -52,7 +57,7 @@ function calculateTicks(position: string, entryPrice: string, exitPrice: string)
   return String(Math.round(priceDifference * 100));
 }
 
-export function TradeForm() {
+export function TradeForm({ assets }: { assets: AssetOption[] }) {
   const [state, action, pending] = useActionState<SaveTradeState, FormData>(
     saveTrade,
     {},
@@ -83,12 +88,22 @@ export function TradeForm() {
       <div className="mt-6 grid gap-4 sm:grid-cols-2">
         <label className="grid gap-2 text-sm font-medium text-slate-300">
           Assets
-          <input
+          <select
             name="assets"
             required
-            className="h-11 rounded-lg border border-emerald-300/20 bg-black px-4 text-white outline-none transition placeholder:text-slate-600 focus:border-emerald-300/60"
-            placeholder="FCPO"
-          />
+            disabled={assets.length === 0}
+            className="h-11 rounded-lg border border-emerald-300/20 bg-black px-4 text-white outline-none transition focus:border-emerald-300/60 disabled:cursor-not-allowed disabled:text-slate-600"
+            defaultValue=""
+          >
+            <option value="" disabled>
+              {assets.length > 0 ? "Select asset" : "No assets configured"}
+            </option>
+            {assets.map((asset) => (
+              <option key={asset.asset_code} value={asset.asset_code}>
+                {asset.asset_code} - {asset.asset_name}
+              </option>
+            ))}
+          </select>
         </label>
 
         <label className="grid gap-2 text-sm font-medium text-slate-300">
@@ -190,7 +205,7 @@ export function TradeForm() {
 
       <button
         type="submit"
-        disabled={pending}
+        disabled={pending || assets.length === 0}
         className="mt-6 inline-flex h-11 items-center justify-center rounded-lg bg-emerald-400 px-5 text-sm font-bold text-slate-950 transition hover:bg-emerald-300 disabled:cursor-not-allowed disabled:opacity-60"
       >
         {pending ? "Saving..." : "Save Trade"}

@@ -1,18 +1,11 @@
-import { Activity, BookPlus, CalendarDays, UserRound } from "lucide-react";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { redirect } from "next/navigation";
+import { Activity, CalendarDays, TrendingUp, UserRound } from "lucide-react";
+import { getUserDashboardData } from "@/lib/dashboard/data";
+import { TradeList } from "./components/trade-list";
 
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect("/login");
-  }
+  const { user, totals, latestTrades, totalTrades } = await getUserDashboardData();
 
   return (
     <div className="mx-auto max-w-7xl">
@@ -40,22 +33,22 @@ export default async function DashboardPage() {
       <div className="mt-6 grid gap-4 md:grid-cols-3">
         {[
           {
-            label: "Trades Logged",
-            value: "0",
-            helper: "Add your first trade to begin tracking.",
-            icon: BookPlus,
+            label: "Today Total Tick",
+            value: totals.today.toLocaleString(),
+            helper: "Based on today's trades in Kuala Lumpur time.",
+            icon: Activity,
           },
           {
-            label: "This Week",
-            value: "0",
-            helper: "Weekly activity will appear here.",
+            label: "This Week Total Tick",
+            value: totals.week.toLocaleString(),
+            helper: "Monday to Sunday in Kuala Lumpur time.",
             icon: CalendarDays,
           },
           {
-            label: "Reflection Score",
-            value: "--",
-            helper: "Built from trade notes and reviews.",
-            icon: Activity,
+            label: "Total Overall Ticks",
+            value: totals.overall.toLocaleString(),
+            helper: `${totalTrades.toLocaleString()} trades logged overall.`,
+            icon: TrendingUp,
           },
         ].map((card) => {
           const Icon = card.icon;
@@ -75,6 +68,8 @@ export default async function DashboardPage() {
           );
         })}
       </div>
+
+      <TradeList trades={latestTrades} showViewAll={totalTrades > latestTrades.length} />
     </div>
   );
 }

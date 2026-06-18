@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BookPlus, LayoutDashboard, LogOut, ScanLine } from "lucide-react";
+import { BookPlus, History, LayoutDashboard, LogOut, ScanLine } from "lucide-react";
 import { signOutUser } from "@/app/login/actions";
 
 const menuItems = [
@@ -12,6 +12,11 @@ const menuItems = [
     href: "/dashboard/add-trade",
     label: "Add Trade",
     icon: BookPlus,
+  },
+  {
+    href: "/dashboard/trades",
+    label: "Trade History",
+    icon: History,
   },
 ];
 

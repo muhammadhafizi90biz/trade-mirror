@@ -91,3 +91,33 @@ export async function createBroadcast(formData: FormData) {
 
   revalidatePath("/admin/settings");
 }
+
+export async function createAssetSetting(formData: FormData) {
+  const session = await requireAdmin();
+  const assetName = getRequiredString(formData, "asset_name");
+  const assetCode = getRequiredString(formData, "asset_code").toUpperCase();
+  const rawPricePerTick = getRequiredString(formData, "price_per_tick");
+  const pricePerTick = Number(rawPricePerTick);
+
+  if (!/^[A-Z0-9._-]+$/.test(assetCode)) {
+    throw new Error("Asset code can only contain letters, numbers, dots, underscores, or hyphens.");
+  }
+
+  if (Number.isNaN(pricePerTick) || pricePerTick <= 0) {
+    throw new Error("Price per tick must be a positive number.");
+  }
+
+  const supabase = createSupabaseAdminClient();
+  const { error } = await supabase.from("asset_settings").insert({
+    asset_name: assetName,
+    asset_code: assetCode,
+    price_per_tick: pricePerTick,
+    created_by: session.userId,
+  });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  revalidatePath("/admin/assets");
+}

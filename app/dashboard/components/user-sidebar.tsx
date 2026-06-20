@@ -1,5 +1,12 @@
 import Link from "next/link";
-import { BookPlus, History, LayoutDashboard, LogOut, ScanLine } from "lucide-react";
+import {
+  BookPlus,
+  CalendarDays,
+  History,
+  LayoutDashboard,
+  LogOut,
+  ScanLine,
+} from "lucide-react";
 import { signOutUser } from "@/app/login/actions";
 
 const menuItems = [
@@ -17,6 +24,11 @@ const menuItems = [
     href: "/dashboard/trades",
     label: "Trade History",
     icon: History,
+  },
+  {
+    href: "/dashboard/pnl-calendar",
+    label: "P&L Calendar",
+    icon: CalendarDays,
   },
 ];
 

@@ -5,10 +5,11 @@ import { createSupabaseAdminClient } from "@/lib/supabase/server";
 import type { AssetSetting } from "@/lib/supabase/types";
 
 function formatMoney(value: number) {
-  return value.toLocaleString("en-MY", {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
     maximumFractionDigits: 2,
-    minimumFractionDigits: 2,
-  });
+  }).format(value);
 }
 
 async function getAssetSettings() {

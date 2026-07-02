@@ -1,11 +1,15 @@
 import { Activity, CalendarDays, TrendingUp, UserRound } from "lucide-react";
-import { getUserDashboardData } from "@/lib/dashboard/data";
-import { TradeList } from "./components/trade-list";
+import { getUserDashboardData, getUserMonthlyProfitData } from "@/lib/dashboard/data";
+import { MonthlyProfitChart } from "./components/monthly-profit-chart";
 
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
-  const { user, totals, latestTrades, totalTrades } = await getUserDashboardData();
+  const [dashboard, monthlyProfit] = await Promise.all([
+    getUserDashboardData(),
+    getUserMonthlyProfitData(),
+  ]);
+  const { user, totals, totalTrades } = dashboard;
 
   return (
     <div className="mx-auto max-w-7xl">
@@ -69,7 +73,9 @@ export default async function DashboardPage() {
         })}
       </div>
 
-      <TradeList trades={latestTrades} showViewAll={totalTrades > latestTrades.length} />
+      <div className="mt-6">
+        <MonthlyProfitChart data={monthlyProfit} />
+      </div>
     </div>
   );
 }

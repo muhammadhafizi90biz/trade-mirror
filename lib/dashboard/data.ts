@@ -88,7 +88,7 @@ function getKualaLumpurWeekRange(date = new Date()) {
   };
 }
 
-function getKualaLumpurMonthRange(year: number, month: number) {
+export function getKualaLumpurMonthRange(year: number, month: number) {
   const start = Date.UTC(year, month - 1, 1) - KUALA_LUMPUR_OFFSET_MS;
   const end = Date.UTC(year, month, 1) - KUALA_LUMPUR_OFFSET_MS;
 
@@ -108,7 +108,7 @@ function getKualaLumpurDateKey(value: string | null) {
   return `${year}-${month}-${day}`;
 }
 
-function getMonthOption(year: number, month: number) {
+export function getMonthOption(year: number, month: number) {
   return `${year}-${String(month).padStart(2, "0")}`;
 }
 
@@ -340,4 +340,98 @@ export async function getUserPnlCalendarData({
       totalTrades,
     },
   };
+}
+
+export type MonthlyProfit = {
+  monthKey: string;
+  year: number;
+  month: number;
+  label: string;
+  pnl: number;
+  ticks: number;
+  tradeCount: number;
+};
+
+export async function getUserMonthlyProfitData(): Promise<MonthlyProfit[]> {
+  const user = await requireUser();
+  const supabase = createSupabaseAdminClient();
+
+  const klParts = getKualaLumpurDateParts();
+  const endYear = klParts.year;
+  const endMonth = klParts.month + 1;
+
+  let startYear = endYear;
+  let startMonth = endMonth - 11;
+  if (startMonth <= 0) {
+    startYear -= 1;
+    startMonth += 12;
+  }
+
+  const startRange = getKualaLumpurMonthRange(startYear, startMonth);
+  const nextMonth = endMonth === 12 ? 1 : endMonth + 1;
+  const nextYear = endMonth === 12 ? endYear + 1 : endYear;
+  const endRange = getKualaLumpurMonthRange(nextYear, nextMonth);
+
+  const [{ data: trades, error: tradesError }, { data: assetSettings, error: assetError }] =
+    await Promise.all([
+      supabase
+        .from("trades")
+        .select("ticks, trade_time, entry_datetime, asset")
+        .eq("user_id", user.id)
+        .gte("trade_time", startRange.start)
+        .lt("trade_time", endRange.end),
+      supabase.from("asset_settings").select("asset_code, price_per_tick"),
+    ]);
+
+  const error = tradesError ?? assetError;
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  const priceByAsset = new Map<string, number>();
+  (assetSettings ?? []).forEach((setting) => {
+    priceByAsset.set(String(setting.asset_code), Number(setting.price_per_tick));
+  });
+
+  const monthMap = new Map<string, MonthlyProfit>();
+  for (let i = 0; i < 12; i++) {
+    let m = startMonth + i;
+    let y = startYear;
+    if (m > 12) {
+      m -= 12;
+      y += 1;
+    }
+    const monthKey = `${y}-${String(m).padStart(2, "0")}`;
+    const date = new Date(Date.UTC(y, m - 1, 1));
+    const label = date.toLocaleDateString("en-MY", {
+      month: "short",
+      year: "numeric",
+      timeZone: "Asia/Kuala_Lumpur",
+    });
+    monthMap.set(monthKey, { monthKey, year: y, month: m, label, pnl: 0, ticks: 0, tradeCount: 0 });
+  }
+
+  ((trades ?? []) as { ticks: number | null; trade_time: string | null; entry_datetime: string | null; asset: string | null }[]).forEach(
+    (trade) => {
+      const source = trade.trade_time ?? trade.entry_datetime;
+      if (!source) {
+        return;
+      }
+      const kl = new Date(new Date(source).getTime() + KUALA_LUMPUR_OFFSET_MS);
+      const y = kl.getUTCFullYear();
+      const m = kl.getUTCMonth() + 1;
+      const monthKey = `${y}-${String(m).padStart(2, "0")}`;
+      const entry = monthMap.get(monthKey);
+      if (!entry) {
+        return;
+      }
+      const ticks = trade.ticks ?? 0;
+      const pricePerTick = priceByAsset.get(trade.asset ?? "") ?? 1;
+      entry.pnl += ticks * pricePerTick;
+      entry.ticks += ticks;
+      entry.tradeCount += 1;
+    },
+  );
+
+  return Array.from(monthMap.values());
 }

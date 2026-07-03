@@ -35,27 +35,33 @@ export default async function DashboardPage() {
       </section>
 
       <div className="mt-6 grid gap-4 md:grid-cols-3">
-        {[
+        {([
           {
-            label: "Today Total Tick",
-            value: totals.today.toLocaleString(),
+            label: "Today P&L",
+            value: totals.today,
             helper: "Based on today's trades in Kuala Lumpur time.",
             icon: Activity,
           },
           {
-            label: "This Week Total Tick",
-            value: totals.week.toLocaleString(),
+            label: "This Week P&L",
+            value: totals.week,
             helper: "Monday to Sunday in Kuala Lumpur time.",
             icon: CalendarDays,
           },
           {
-            label: "Total Overall Ticks",
-            value: totals.overall.toLocaleString(),
+            label: "Total Overall P&L",
+            value: totals.overall,
             helper: `${totalTrades.toLocaleString()} trades logged overall.`,
             icon: TrendingUp,
           },
-        ].map((card) => {
+        ] as const).map((card) => {
           const Icon = card.icon;
+          const formatted = new Intl.NumberFormat("en-US", {
+            style: "currency",
+            currency: "USD",
+            maximumFractionDigits: 2,
+          }).format(card.value);
+          const isPositive = card.value >= 0;
 
           return (
             <article
@@ -66,7 +72,13 @@ export default async function DashboardPage() {
                 <p className="text-sm font-medium text-slate-400">{card.label}</p>
                 <Icon className="h-5 w-5 text-emerald-300" strokeWidth={1.8} />
               </div>
-              <p className="mt-5 text-3xl font-semibold text-white">{card.value}</p>
+              <p
+                className={`mt-5 text-3xl font-semibold ${
+                  isPositive ? "text-emerald-300" : "text-rose-300"
+                }`}
+              >
+                {formatted}
+              </p>
               <p className="mt-2 text-sm text-slate-500">{card.helper}</p>
             </article>
           );

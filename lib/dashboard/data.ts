@@ -12,6 +12,14 @@ type UserSession = {
   email?: string;
 };
 
+export type TradeFilters = {
+  asset?: string;
+  position?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  result?: string;
+};
+
 export type TradeListItem = Pick<
   Trade,
   | "id"
@@ -154,21 +162,23 @@ export async function getUserDashboardData() {
     { data: todayTrades, error: todayError },
     { data: weekTrades, error: weekError },
     { data: allTrades, error: allError },
+    { data: assetSettings, error: assetError },
     { data: latestTrades, error: latestError, count },
   ] = await Promise.all([
     supabase
       .from("trades")
-      .select("ticks")
+      .select("ticks, asset")
       .eq("user_id", user.id)
       .gte("trade_time", today.start)
       .lt("trade_time", today.end),
     supabase
       .from("trades")
-      .select("ticks")
+      .select("ticks, asset")
       .eq("user_id", user.id)
       .gte("trade_time", week.start)
       .lt("trade_time", week.end),
-    supabase.from("trades").select("ticks").eq("user_id", user.id),
+    supabase.from("trades").select("ticks, asset").eq("user_id", user.id),
+    supabase.from("asset_settings").select("asset_code, price_per_tick"),
     supabase
       .from("trades")
       .select(tradeSelect(), { count: "exact" })
@@ -177,35 +187,69 @@ export async function getUserDashboardData() {
       .range(0, TRADES_PAGE_SIZE - 1),
   ]);
 
-  const error = todayError ?? weekError ?? allError ?? latestError;
+  const error = todayError ?? weekError ?? allError ?? assetError ?? latestError;
 
   if (error) {
     throw new Error(error.message);
   }
 
+  const priceByAsset = new Map<string, number>();
+  (assetSettings ?? []).forEach((setting) => {
+    priceByAsset.set(String(setting.asset_code), Number(setting.price_per_tick));
+  });
+
+  function sumPnl(trades: { ticks: number | null; asset: string | null }[]) {
+    return trades.reduce((total, trade) => {
+      const ticks = trade.ticks ?? 0;
+      const pricePerTick = priceByAsset.get(trade.asset ?? "") ?? 1;
+      return total + ticks * pricePerTick;
+    }, 0);
+  }
+
   return {
     user,
     totals: {
-      today: sumTicks(todayTrades ?? []),
-      week: sumTicks(weekTrades ?? []),
-      overall: sumTicks(allTrades ?? []),
+      today: sumPnl(todayTrades ?? []),
+      week: sumPnl(weekTrades ?? []),
+      overall: sumPnl(allTrades ?? []),
     },
     latestTrades: (latestTrades ?? []) as unknown as TradeListItem[],
     totalTrades: count ?? 0,
   };
 }
 
-export async function getUserTradesPage(page: number) {
+export async function getUserTradesPage(page: number, filters?: TradeFilters) {
   const user = await requireUser();
   const supabase = createSupabaseAdminClient();
   const safePage = Number.isInteger(page) && page > 0 ? page : 1;
   const from = (safePage - 1) * TRADES_PAGE_SIZE;
   const to = from + TRADES_PAGE_SIZE - 1;
 
-  const { data, error, count } = await supabase
+  let query = supabase
     .from("trades")
     .select(tradeSelect(), { count: "exact" })
-    .eq("user_id", user.id)
+    .eq("user_id", user.id);
+
+  if (filters?.asset) {
+    query = query.eq("asset", filters.asset);
+  }
+  if (filters?.position) {
+    query = query.eq("position", filters.position);
+  }
+  if (filters?.dateFrom) {
+    query = query.gte("created_at", filters.dateFrom);
+  }
+  if (filters?.dateTo) {
+    query = query.lte("created_at", filters.dateTo);
+  }
+  if (filters?.result === "profit") {
+    query = query.gt("ticks", 0);
+  }
+  if (filters?.result === "loss") {
+    query = query.lt("ticks", 0);
+  }
+
+  const { data, error, count } = await query
     .order("created_at", { ascending: false })
     .range(from, to);
 
@@ -219,7 +263,31 @@ export async function getUserTradesPage(page: number) {
     page: safePage,
     totalTrades: count ?? 0,
     totalPages: Math.max(1, Math.ceil((count ?? 0) / TRADES_PAGE_SIZE)),
+    filters: {
+      asset: filters?.asset ?? "",
+      position: filters?.position ?? "",
+      dateFrom: filters?.dateFrom ?? "",
+      dateTo: filters?.dateTo ?? "",
+      result: filters?.result ?? "",
+    },
   };
+}
+
+export async function getUserAssets() {
+  const supabase = createSupabaseAdminClient();
+  const { data, error } = await supabase
+    .from("asset_settings")
+    .select("asset_code, asset_name")
+    .order("asset_code", { ascending: true });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return (data ?? []).map((a) => ({
+    code: String(a.asset_code),
+    name: String(a.asset_name),
+  }));
 }
 
 export async function getUserTradeDetails(tradeId: string) {

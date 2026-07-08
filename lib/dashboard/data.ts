@@ -206,6 +206,10 @@ export async function getUserDashboardData() {
     }, 0);
   }
 
+  const totalTradesCount = count ?? 0;
+  const winningTrades = (allTrades ?? []).filter((t) => (t.ticks ?? 0) > 0).length;
+  const winRate = totalTradesCount > 0 ? (winningTrades / totalTradesCount) * 100 : 0;
+
   return {
     user,
     totals: {
@@ -214,7 +218,8 @@ export async function getUserDashboardData() {
       overall: sumPnl(allTrades ?? []),
     },
     latestTrades: (latestTrades ?? []) as unknown as TradeListItem[],
-    totalTrades: count ?? 0,
+    totalTrades: totalTradesCount,
+    winRate,
   };
 }
 

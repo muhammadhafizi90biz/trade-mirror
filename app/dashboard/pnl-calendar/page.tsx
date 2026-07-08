@@ -241,7 +241,7 @@ export default async function PnlCalendarPage({
         </h2>
         {data.selectedDay ? (
           <div className="mt-4">
-            <div className="grid gap-3 sm:grid-cols-3">
+            <div className="grid gap-3 sm:grid-cols-2">
               <div className="rounded-lg border border-emerald-300/10 bg-black/30 p-4">
                 <p className="text-xs uppercase tracking-[0.12em] text-slate-500">Net P&L</p>
                 <p className="mt-2 text-2xl font-semibold text-white">
@@ -252,16 +252,6 @@ export default async function PnlCalendarPage({
                 <p className="text-xs uppercase tracking-[0.12em] text-slate-500">Trades</p>
                 <p className="mt-2 text-2xl font-semibold text-white">
                   {data.selectedDay.tradeCount}
-                </p>
-              </div>
-              <div className="rounded-lg border border-emerald-300/10 bg-black/30 p-4">
-                <p className="text-xs uppercase tracking-[0.12em] text-slate-500">Avg P&L</p>
-                <p className="mt-2 text-2xl font-semibold text-white">
-                  {formatCurrency(
-                    data.selectedDay.tradeCount > 0
-                      ? data.selectedDay.pnl / data.selectedDay.tradeCount
-                      : 0,
-                  )}
                 </p>
               </div>
             </div>
@@ -278,7 +268,11 @@ export default async function PnlCalendarPage({
                     <span className="text-slate-400">
                       {(trade.ticks ?? 0).toLocaleString()} ticks
                     </span>
-                    <span className="font-semibold text-emerald-200">
+                    <span
+                      className={`font-semibold ${
+                        trade.pnl >= 0 ? "text-emerald-200" : "text-rose-400"
+                      }`}
+                    >
                       {formatCurrency(trade.pnl)}
                     </span>
                   </Link>

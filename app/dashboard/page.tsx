@@ -1,4 +1,4 @@
-import { Activity, CalendarDays, TrendingUp, UserRound } from "lucide-react";
+import { Activity, CalendarDays, Target, TrendingUp, UserRound } from "lucide-react";
 import { getUserDashboardData, getUserMonthlyProfitData } from "@/lib/dashboard/data";
 import { MonthlyProfitChart } from "./components/monthly-profit-chart";
 
@@ -9,7 +9,7 @@ export default async function DashboardPage() {
     getUserDashboardData(),
     getUserMonthlyProfitData(),
   ]);
-  const { user, totals, totalTrades } = dashboard;
+  const { user, totals, totalTrades, winRate } = dashboard;
 
   return (
     <div className="mx-auto max-w-7xl">
@@ -34,7 +34,7 @@ export default async function DashboardPage() {
         </p>
       </section>
 
-      <div className="mt-6 grid gap-4 md:grid-cols-3">
+      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {([
           {
             label: "Today P&L",
@@ -49,6 +49,12 @@ export default async function DashboardPage() {
             icon: CalendarDays,
           },
           {
+            label: "Win Rate",
+            value: winRate,
+            helper: `${totalTrades.toLocaleString()} trades logged overall.`,
+            icon: Target,
+          },
+          {
             label: "Total Overall P&L",
             value: totals.overall,
             helper: `${totalTrades.toLocaleString()} trades logged overall.`,
@@ -56,12 +62,15 @@ export default async function DashboardPage() {
           },
         ] as const).map((card) => {
           const Icon = card.icon;
-          const formatted = new Intl.NumberFormat("en-US", {
-            style: "currency",
-            currency: "USD",
-            maximumFractionDigits: 2,
-          }).format(card.value);
-          const isPositive = card.value >= 0;
+          const isWinRate = card.label === "Win Rate";
+          const formatted = isWinRate
+            ? `${card.value.toFixed(1)}%`
+            : new Intl.NumberFormat("en-US", {
+                style: "currency",
+                currency: "USD",
+                maximumFractionDigits: 2,
+              }).format(card.value);
+          const isPositive = isWinRate || card.value >= 0;
 
           return (
             <article

@@ -124,6 +124,20 @@ export function TradeForm({ assets }: { assets: AssetOption[] }) {
         </label>
 
         <label className="grid gap-2 text-sm font-medium text-slate-300">
+          Contracts
+          <input
+            name="contracts"
+            type="number"
+            min="1"
+            step="1"
+            required
+            defaultValue="1"
+            inputMode="numeric"
+            className="h-11 rounded-lg border border-emerald-300/20 bg-black px-4 text-white outline-none transition placeholder:text-slate-600 focus:border-emerald-300/60"
+          />
+        </label>
+
+        <label className="grid gap-2 text-sm font-medium text-slate-300">
           Entry Price
           <input
             name="entry_price"

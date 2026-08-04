@@ -75,16 +75,18 @@ export async function saveTrade(
       return { message: "Position must be long or short.", success: false };
     }
 
+    const contracts = readRequiredNumber(formData, "contracts");
     const entryPrice = readRequiredNumber(formData, "entry_price");
     const exitPrice = readRequiredNumber(formData, "exit_price");
     const entryDatetime = parseDatetime(readRequiredString(formData, "entry_datetime"));
     const exitDatetime = parseDatetime(readRequiredString(formData, "exit_datetime"));
-    const ticks = calculateTicks(positionValue, entryPrice, exitPrice);
+    const ticks = calculateTicks(positionValue, entryPrice, exitPrice) * contracts;
     const adminSupabase = createSupabaseAdminClient();
 
     const { error } = await adminSupabase.from("trades").insert({
       user_id: user.id,
       asset,
+      contracts,
       position: positionValue,
       entry_price: entryPrice,
       entry_datetime: entryDatetime,

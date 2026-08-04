@@ -17,6 +17,7 @@ export type Trade = {
   entry_datetime: string | null;
   exit_price: number | null;
   exit_datetime: string | null;
+  contracts: number | null;
   followed_rules: string | null;
   feeling_before: string | null;
   feeling_during: string | null;

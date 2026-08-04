@@ -40,7 +40,7 @@ export async function getAdminHomeData() {
   const { data: trades, error } = await supabase
     .from("trades")
     .select(
-      "id,user_id,asset,ticks,trade_time,position,entry_price,entry_datetime,exit_price,exit_datetime,followed_rules,feeling_before,feeling_during,feeling_after,moved_stop,profit_too_early,hesitated,revenge_trade,created_at",
+      "id,user_id,asset,contracts,ticks,trade_time,position,entry_price,entry_datetime,exit_price,exit_datetime,followed_rules,feeling_before,feeling_during,feeling_after,moved_stop,profit_too_early,hesitated,revenge_trade,created_at",
     )
     .order("created_at", { ascending: false })
     .limit(2000);
@@ -152,7 +152,7 @@ export async function getTradeAuditData() {
   const { data: trades, error } = await supabase
     .from("trades")
     .select(
-      "id,user_id,asset,ticks,trade_time,position,entry_price,entry_datetime,exit_price,exit_datetime,followed_rules,feeling_before,feeling_during,feeling_after,moved_stop,profit_too_early,hesitated,revenge_trade,created_at",
+      "id,user_id,asset,contracts,ticks,trade_time,position,entry_price,entry_datetime,exit_price,exit_datetime,followed_rules,feeling_before,feeling_during,feeling_after,moved_stop,profit_too_early,hesitated,revenge_trade,created_at",
     )
     .order("created_at", { ascending: false })
     .limit(2000);

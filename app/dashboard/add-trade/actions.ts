@@ -40,7 +40,11 @@ function readRequiredNumber(formData: FormData, key: string) {
 }
 
 function parseDatetime(value: string) {
-  const date = new Date(value);
+  // `<input type="datetime-local">` yields a timezone-less string like
+  // "2026-09-24T06:14" (or with seconds). Treat it as Kuala Lumpur time
+  // (UTC+8) so it is not interpreted in the server's local timezone.
+  const normalized = /([+-]\d{2}:\d{2}|Z)$/.test(value) ? value : `${value}+08:00`;
+  const date = new Date(normalized);
 
   if (Number.isNaN(date.getTime())) {
     throw new Error("Date and time must be valid.");

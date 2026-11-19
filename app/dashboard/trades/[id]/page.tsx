@@ -130,6 +130,10 @@ export default async function TradeDetailsPage({
             }
           />
           <DetailItem
+            label="Contracts"
+            value={(trade.contracts ?? 0).toLocaleString()}
+          />
+          <DetailItem
             label="Entry"
             value={
               <span>

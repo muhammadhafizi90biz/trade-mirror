@@ -30,6 +30,7 @@ export type TradeListItem = Pick<
   | "exit_price"
   | "exit_datetime"
   | "ticks"
+  | "contracts"
   | "created_at"
 >;
 
@@ -141,11 +142,11 @@ function sumTicks(trades: Pick<Trade, "ticks">[]) {
 }
 
 function tradeSelect() {
-  return "id,asset,position,entry_price,entry_datetime,exit_price,exit_datetime,ticks,created_at";
+  return "id,asset,position,entry_price,entry_datetime,exit_price,exit_datetime,ticks,contracts,created_at";
 }
 
 function tradeDetailsSelect() {
-  return "id,user_id,asset,ticks,trade_time,position,entry_price,entry_datetime,exit_price,exit_datetime,followed_rules,feeling_before,feeling_during,feeling_after,moved_stop,profit_too_early,hesitated,revenge_trade,created_at";
+  return "id,user_id,asset,contracts,ticks,trade_time,position,entry_price,entry_datetime,exit_price,exit_datetime,followed_rules,feeling_before,feeling_during,feeling_after,moved_stop,profit_too_early,hesitated,revenge_trade,created_at";
 }
 
 function calendarTradeSelect() {

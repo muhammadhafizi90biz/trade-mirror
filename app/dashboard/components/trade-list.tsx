@@ -75,11 +75,12 @@ export function TradeList({
 
       {trades.length > 0 ? (
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[840px] text-left text-sm">
+          <table className="w-full min-w-[920px] text-left text-sm">
             <thead className="border-b border-emerald-300/10 text-xs uppercase tracking-[0.12em] text-slate-500">
               <tr>
                 <th className="px-4 py-3 font-semibold">Asset</th>
                 <th className="px-4 py-3 font-semibold">Position</th>
+                <th className="px-4 py-3 font-semibold">Contracts</th>
                 <th className="px-4 py-3 font-semibold">Entry</th>
                 <th className="px-4 py-3 font-semibold">Exit</th>
                 <th className="px-4 py-3 font-semibold">Ticks</th>
@@ -99,6 +100,9 @@ export function TradeList({
                     >
                       {trade.position ?? "-"}
                     </span>
+                  </td>
+                  <td className="px-4 py-4 font-medium text-slate-300">
+                    {(trade.contracts ?? 0).toLocaleString()}
                   </td>
                   <td className="px-4 py-4 text-slate-300">
                     <span className="block font-medium">{formatPrice(trade.entry_price)}</span>

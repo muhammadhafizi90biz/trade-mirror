@@ -17,7 +17,7 @@ async function getAssetSettings() {
   const supabase = createSupabaseAdminClient();
   const { data, error } = await supabase
     .from("asset_settings")
-    .select("id,asset_name,asset_code,price_per_tick,tick_size_cents,created_by,created_at")
+    .select("id,asset_name,asset_code,price_per_tick,tick_size,created_by,created_at")
     .order("asset_code", { ascending: true });
 
   if (error) {
@@ -95,14 +95,14 @@ export default async function AdminAssetsPage() {
           </label>
 
           <label className="grid gap-2 text-sm font-medium text-slate-300">
-            Tick Size (cents)
+            Tick Size (price units)
             <input
-              name="tick_size_cents"
+              name="tick_size"
               type="number"
-              step="0.01"
-              min="0.01"
+              step="0.0001"
+              min="0.0001"
               required
-              defaultValue="1"
+              defaultValue="0.01"
               className="h-11 rounded-lg border border-amber-300/20 bg-black px-4 text-white outline-none transition placeholder:text-slate-600 focus:border-amber-300/60"
               placeholder="0.5"
             />
@@ -153,7 +153,7 @@ export default async function AdminAssetsPage() {
                       {formatMoney(asset.price_per_tick)}
                     </td>
                     <td className="px-4 py-4 text-amber-200">
-                      {Number(asset.tick_size_cents).toLocaleString("en-US", {
+                      {Number(asset.tick_size).toLocaleString("en-US", {
                         maximumFractionDigits: 2,
                       })}
                     </td>

@@ -5,7 +5,7 @@ async function getAssetOptions() {
   const supabase = createSupabaseAdminClient();
   const { data, error } = await supabase
     .from("asset_settings")
-    .select("asset_name,asset_code,tick_size_cents")
+    .select("asset_name,asset_code,tick_size")
     .order("asset_code", { ascending: true });
 
   if (error) {

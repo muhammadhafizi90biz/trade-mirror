@@ -4,12 +4,12 @@ import { useActionState } from "react";
 import { useMemo, useState } from "react";
 import { BookPlus } from "lucide-react";
 import { saveTrade, type SaveTradeState } from "./actions";
-import { calculateTicks, DEFAULT_TICK_SIZE_CENTS, type Position } from "@/lib/trades/ticks";
+import { calculateTicks, DEFAULT_TICK_SIZE, parsePrice, type Position } from "@/lib/trades/ticks";
 
 type AssetOption = {
   asset_name: string;
   asset_code: string;
-  tick_size_cents: number;
+  tick_size: number;
 };
 
 const reflectionQuestions = [
@@ -51,16 +51,16 @@ function calculateTotalTicks(
   position: string,
   entryPrice: string,
   exitPrice: string,
-  tickSizeCents: number,
+  tickSize: number,
 ) {
-  const entry = Number(entryPrice);
-  const exit = Number(exitPrice);
+  const entry = parsePrice(entryPrice);
+  const exit = parsePrice(exitPrice);
 
   if ((position !== "long" && position !== "short") || Number.isNaN(entry) || Number.isNaN(exit)) {
     return "";
   }
 
-  return String(calculateTicks(position as Position, entry, exit, tickSizeCents));
+  return String(calculateTicks(position as Position, entry, exit, tickSize));
 }
 
 export function TradeForm({ assets }: { assets: AssetOption[] }) {
@@ -73,16 +73,16 @@ export function TradeForm({ assets }: { assets: AssetOption[] }) {
   const [entryPrice, setEntryPrice] = useState("");
   const [exitPrice, setExitPrice] = useState("");
 
-  const tickSizeCents = useMemo(
+  const tickSize = useMemo(
     () =>
-      assets.find((asset) => asset.asset_code === assetCode)?.tick_size_cents ??
-      DEFAULT_TICK_SIZE_CENTS,
+      assets.find((asset) => asset.asset_code === assetCode)?.tick_size ??
+      DEFAULT_TICK_SIZE,
     [assets, assetCode],
   );
 
   const totalTicks = useMemo(
-    () => calculateTotalTicks(position, entryPrice, exitPrice, tickSizeCents),
-    [position, entryPrice, exitPrice, tickSizeCents],
+    () => calculateTotalTicks(position, entryPrice, exitPrice, tickSize),
+    [position, entryPrice, exitPrice, tickSize],
   );
 
   return (
@@ -156,13 +156,13 @@ export function TradeForm({ assets }: { assets: AssetOption[] }) {
           Entry Price
           <input
             name="entry_price"
-            type="number"
-            step="0.01"
+            type="text"
+            inputMode="decimal"
             required
             value={entryPrice}
             onChange={(event) => setEntryPrice(event.target.value)}
             className="h-11 rounded-lg border border-emerald-300/20 bg-black px-4 text-white outline-none transition placeholder:text-slate-600 focus:border-emerald-300/60"
-            placeholder="3850"
+            placeholder="1221'6 or 1221.75"
           />
         </label>
 
@@ -180,13 +180,13 @@ export function TradeForm({ assets }: { assets: AssetOption[] }) {
           Exit Price
           <input
             name="exit_price"
-            type="number"
-            step="0.01"
+            type="text"
+            inputMode="decimal"
             required
             value={exitPrice}
             onChange={(event) => setExitPrice(event.target.value)}
             className="h-11 rounded-lg border border-emerald-300/20 bg-black px-4 text-white outline-none transition placeholder:text-slate-600 focus:border-emerald-300/60"
-            placeholder="3862"
+            placeholder="1216'2 or 1216.25"
           />
         </label>
 

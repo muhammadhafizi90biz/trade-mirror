@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createSupabaseAdminClient, createSupabaseServerClient } from "@/lib/supabase/server";
-import { calculateTicks, DEFAULT_TICK_SIZE_CENTS } from "@/lib/trades/ticks";
+import { calculateTicks, DEFAULT_TICK_SIZE, parsePrice } from "@/lib/trades/ticks";
 
 export type SaveTradeState = {
   message?: string;
@@ -38,6 +38,16 @@ function readRequiredNumber(formData: FormData, key: string) {
   }
 
   return value;
+}
+
+function readRequiredPrice(formData: FormData, key: string) {
+  const parsed = parsePrice(readRequiredString(formData, key));
+
+  if (Number.isNaN(parsed)) {
+    throw new Error(`${key} must be a valid price (e.g. 1221'6 or 1221.75).`);
+  }
+
+  return parsed;
 }
 
 function parseDatetime(value: string) {
@@ -76,15 +86,15 @@ export async function saveTrade(
     }
 
     const contracts = readRequiredNumber(formData, "contracts");
-    const entryPrice = readRequiredNumber(formData, "entry_price");
-    const exitPrice = readRequiredNumber(formData, "exit_price");
+    const entryPrice = readRequiredPrice(formData, "entry_price");
+    const exitPrice = readRequiredPrice(formData, "exit_price");
     const entryDatetime = parseDatetime(readRequiredString(formData, "entry_datetime"));
     const exitDatetime = parseDatetime(readRequiredString(formData, "exit_datetime"));
     const adminSupabase = createSupabaseAdminClient();
 
     const { data: assetSetting, error: assetError } = await adminSupabase
       .from("asset_settings")
-      .select("tick_size_cents")
+      .select("tick_size")
       .eq("asset_code", asset.toUpperCase())
       .maybeSingle();
 
@@ -92,8 +102,8 @@ export async function saveTrade(
       return { message: assetError.message, success: false };
     }
 
-    const tickSizeCents = Number(assetSetting?.tick_size_cents ?? DEFAULT_TICK_SIZE_CENTS);
-    const ticks = calculateTicks(positionValue, entryPrice, exitPrice, tickSizeCents) * contracts;
+    const tickSize = Number(assetSetting?.tick_size ?? DEFAULT_TICK_SIZE);
+    const ticks = calculateTicks(positionValue, entryPrice, exitPrice, tickSize) * contracts;
 
     const { error } = await adminSupabase.from("trades").insert({
       user_id: user.id,

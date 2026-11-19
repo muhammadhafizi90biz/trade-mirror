@@ -52,7 +52,7 @@ export type AssetSetting = {
   asset_name: string;
   asset_code: string;
   price_per_tick: number;
-  tick_size_cents: number;
+  tick_size: number;
   created_by: string | null;
   created_at: string;
 };

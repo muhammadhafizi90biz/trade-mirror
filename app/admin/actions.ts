@@ -98,6 +98,7 @@ export async function createAssetSetting(formData: FormData) {
   const assetCode = getRequiredString(formData, "asset_code").toUpperCase();
   const rawPricePerTick = getRequiredString(formData, "price_per_tick");
   const pricePerTick = Number(rawPricePerTick);
+  const tickSizeCents = Number(getRequiredString(formData, "tick_size_cents"));
 
   if (!/^[A-Z0-9._-]+$/.test(assetCode)) {
     throw new Error("Asset code can only contain letters, numbers, dots, underscores, or hyphens.");
@@ -107,11 +108,16 @@ export async function createAssetSetting(formData: FormData) {
     throw new Error("Price per tick must be a positive number.");
   }
 
+  if (Number.isNaN(tickSizeCents) || tickSizeCents <= 0) {
+    throw new Error("Tick size must be a positive number of cents.");
+  }
+
   const supabase = createSupabaseAdminClient();
   const { error } = await supabase.from("asset_settings").insert({
     asset_name: assetName,
     asset_code: assetCode,
     price_per_tick: pricePerTick,
+    tick_size_cents: tickSizeCents,
     created_by: session.userId,
   });
 

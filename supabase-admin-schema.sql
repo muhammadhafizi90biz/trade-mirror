@@ -51,6 +51,7 @@ create table if not exists public.asset_settings (
   asset_name text not null,
   asset_code text not null unique,
   price_per_tick numeric not null check (price_per_tick > 0),
+  tick_size_cents numeric not null default 1 check (tick_size_cents > 0),
   created_by uuid references public.profiles(id),
   created_at timestamptz not null default now()
 );

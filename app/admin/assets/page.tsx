@@ -17,7 +17,7 @@ async function getAssetSettings() {
   const supabase = createSupabaseAdminClient();
   const { data, error } = await supabase
     .from("asset_settings")
-    .select("id,asset_name,asset_code,price_per_tick,created_by,created_at")
+    .select("id,asset_name,asset_code,price_per_tick,tick_size_cents,created_by,created_at")
     .order("asset_code", { ascending: true });
 
   if (error) {
@@ -60,7 +60,7 @@ export default async function AdminAssetsPage() {
           </div>
         </div>
 
-        <div className="mt-6 grid gap-4 lg:grid-cols-[1fr_0.8fr_0.8fr_auto] lg:items-end">
+        <div className="mt-6 grid gap-4 lg:grid-cols-[1fr_0.7fr_0.7fr_0.7fr_auto] lg:items-end">
           <label className="grid gap-2 text-sm font-medium text-slate-300">
             Asset Name
             <input
@@ -94,6 +94,20 @@ export default async function AdminAssetsPage() {
             />
           </label>
 
+          <label className="grid gap-2 text-sm font-medium text-slate-300">
+            Tick Size (cents)
+            <input
+              name="tick_size_cents"
+              type="number"
+              step="0.01"
+              min="0.01"
+              required
+              defaultValue="1"
+              className="h-11 rounded-lg border border-amber-300/20 bg-black px-4 text-white outline-none transition placeholder:text-slate-600 focus:border-amber-300/60"
+              placeholder="0.5"
+            />
+          </label>
+
           <button
             type="submit"
             className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-amber-300 px-5 text-sm font-bold text-black transition hover:bg-amber-200"
@@ -120,6 +134,7 @@ export default async function AdminAssetsPage() {
                   <th className="px-4 py-3 font-semibold">Asset Name</th>
                   <th className="px-4 py-3 font-semibold">Asset Code</th>
                   <th className="px-4 py-3 font-semibold">Price Per Tick</th>
+                  <th className="px-4 py-3 font-semibold">Tick Size (cents)</th>
                   <th className="px-4 py-3 font-semibold">Created</th>
                 </tr>
               </thead>
@@ -136,6 +151,11 @@ export default async function AdminAssetsPage() {
                     </td>
                     <td className="px-4 py-4 text-amber-200">
                       {formatMoney(asset.price_per_tick)}
+                    </td>
+                    <td className="px-4 py-4 text-amber-200">
+                      {Number(asset.tick_size_cents).toLocaleString("en-US", {
+                        maximumFractionDigits: 2,
+                      })}
                     </td>
                     <td className="px-4 py-4 text-slate-400">
                       {new Intl.DateTimeFormat("en-MY", {

@@ -47,6 +47,7 @@ A personal trading journal built with Next.js and Supabase, featuring trade logg
 - **No REST API routes** — all data is fetched server-side in React Server Components using Supabase directly
 - **Kuala Lumpur timezone (UTC+8)** — all date calculations use KL timezone
 - **P&L Calculation** — `ticks × price_per_tick` from the `asset_settings` table
+- **Per-asset tick sizing** — each asset stores `tick_size_cents` (default `1`); ticks = price move in cents ÷ tick size. Default assets like ZL use `1` cent (e.g. `1250'5` priced `1250.50` = 1 tick per cent), while others like MZS use `0.5` cents so a 5.5 cent move = 11 ticks.
 - **Two Supabase clients** — SSR client for auth, admin client (service role) for data queries
 - **Charting** — all visualizations are hand-built with Tailwind CSS (no charting library)
 

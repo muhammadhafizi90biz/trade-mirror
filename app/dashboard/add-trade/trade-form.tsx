@@ -4,10 +4,12 @@ import { useActionState } from "react";
 import { useMemo, useState } from "react";
 import { BookPlus } from "lucide-react";
 import { saveTrade, type SaveTradeState } from "./actions";
+import { calculateTicks, DEFAULT_TICK_SIZE_CENTS, type Position } from "@/lib/trades/ticks";
 
 type AssetOption = {
   asset_name: string;
   asset_code: string;
+  tick_size_cents: number;
 };
 
 const reflectionQuestions = [
@@ -45,16 +47,20 @@ const reflectionQuestions = [
   },
 ];
 
-function calculateTicks(position: string, entryPrice: string, exitPrice: string) {
+function calculateTotalTicks(
+  position: string,
+  entryPrice: string,
+  exitPrice: string,
+  tickSizeCents: number,
+) {
   const entry = Number(entryPrice);
   const exit = Number(exitPrice);
 
-  if (!position || Number.isNaN(entry) || Number.isNaN(exit)) {
+  if ((position !== "long" && position !== "short") || Number.isNaN(entry) || Number.isNaN(exit)) {
     return "";
   }
 
-  const priceDifference = position === "short" ? entry - exit : exit - entry;
-  return String(Math.round(priceDifference * 100));
+  return String(calculateTicks(position as Position, entry, exit, tickSizeCents));
 }
 
 export function TradeForm({ assets }: { assets: AssetOption[] }) {
@@ -63,12 +69,20 @@ export function TradeForm({ assets }: { assets: AssetOption[] }) {
     {},
   );
   const [position, setPosition] = useState("");
+  const [assetCode, setAssetCode] = useState("");
   const [entryPrice, setEntryPrice] = useState("");
   const [exitPrice, setExitPrice] = useState("");
 
+  const tickSizeCents = useMemo(
+    () =>
+      assets.find((asset) => asset.asset_code === assetCode)?.tick_size_cents ??
+      DEFAULT_TICK_SIZE_CENTS,
+    [assets, assetCode],
+  );
+
   const totalTicks = useMemo(
-    () => calculateTicks(position, entryPrice, exitPrice),
-    [position, entryPrice, exitPrice],
+    () => calculateTotalTicks(position, entryPrice, exitPrice, tickSizeCents),
+    [position, entryPrice, exitPrice, tickSizeCents],
   );
 
   return (
@@ -92,8 +106,9 @@ export function TradeForm({ assets }: { assets: AssetOption[] }) {
             name="assets"
             required
             disabled={assets.length === 0}
+            value={assetCode}
+            onChange={(event) => setAssetCode(event.target.value)}
             className="h-11 rounded-lg border border-emerald-300/20 bg-black px-4 text-white outline-none transition focus:border-emerald-300/60 disabled:cursor-not-allowed disabled:text-slate-600"
-            defaultValue=""
           >
             <option value="" disabled>
               {assets.length > 0 ? "Select asset" : "No assets configured"}
